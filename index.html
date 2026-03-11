@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ShortsFire 🔥</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#07070a;--surface:#111116;--surface2:#1a1a22;
+  --border:rgba(255,255,255,0.07);
+  --red:#ff2d4b;--orange:#ff6b2b;--yellow:#ffd60a;
+  --cyan:#00e5ff;--green:#00e096;
+  --text:#f0f0f5;--muted:#6e6e8a;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);font-family:'Nunito',sans-serif;color:var(--text);}
+
+/* ═══ SETUP ═══ */
+#setup{
+  position:fixed;inset:0;z-index:1000;
+  background:
+    radial-gradient(ellipse at 25% 20%,rgba(255,45,75,0.18) 0%,transparent 55%),
+    radial-gradient(ellipse at 78% 80%,rgba(0,229,255,0.09) 0%,transparent 55%),
+    var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:28px;gap:24px;
+}
+.s-fire{font-size:58px;text-align:center;animation:float 2.5s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+.s-logo{
+  font-family:'Bebas Neue',sans-serif;font-size:62px;letter-spacing:4px;line-height:1;
+  background:linear-gradient(135deg,var(--red),var(--orange),var(--yellow));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 0 36px rgba(255,45,75,0.55));text-align:center;
+}
+.s-tagline{font-size:14px;color:var(--muted);text-align:center;max-width:240px;line-height:1.85;}
+.s-tagline b{color:var(--text);}
+.s-card{width:100%;max-width:370px;background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:26px;display:flex;flex-direction:column;gap:14px;}
+.s-label{font-size:11px;font-weight:800;color:var(--muted);letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:7px;}
+.inp-wrap{position:relative;}
+.s-inp{width:100%;padding:14px 46px 14px 16px;background:var(--surface2);border:1.5px solid var(--border);border-radius:13px;color:var(--text);font-family:inherit;font-size:15px;outline:none;transition:border-color 0.2s;}
+.s-inp:focus{border-color:var(--red);}
+.s-inp::placeholder{color:var(--muted);}
+.eye{position:absolute;right:13px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:17px;padding:4px;}
+.go-btn{width:100%;padding:16px;border-radius:13px;border:none;background:linear-gradient(135deg,var(--red),var(--orange));color:white;font-family:inherit;font-size:17px;font-weight:900;cursor:pointer;box-shadow:0 4px 24px rgba(255,45,75,0.38);transition:transform 0.15s,filter 0.15s;}
+.go-btn:hover{filter:brightness(1.1);}
+.go-btn:active{transform:scale(0.97);}
+.s-note{font-size:11px;color:var(--muted);text-align:center;line-height:1.85;max-width:330px;}
+.s-note a{color:var(--cyan);text-decoration:none;}
+
+/* ═══ LOADING ═══ */
+#loading{position:fixed;inset:0;z-index:900;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;gap:22px;}
+.spin{width:52px;height:52px;border:3px solid rgba(255,255,255,0.07);border-top-color:var(--red);border-radius:50%;animation:spin 0.75s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.l-logo{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:2px;background:linear-gradient(135deg,var(--red),var(--yellow));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.l-msg{font-size:13px;color:var(--muted);text-align:center;max-width:210px;line-height:1.65;}
+
+/* ═══ APP ═══ */
+#app{display:none;height:100vh;position:relative;}
+
+/* Topbar — clean, no algo info */
+.topbar{position:absolute;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;background:linear-gradient(to bottom,rgba(7,7,10,0.96) 0%,transparent 100%);pointer-events:none;}
+.t-logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;background:linear-gradient(135deg,var(--red),var(--yellow));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.t-btns{display:flex;gap:8px;pointer-events:all;}
+.t-btn{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;backdrop-filter:blur(6px);transition:background 0.2s;-webkit-tap-highlight-color:transparent;}
+.t-btn:active{background:rgba(255,255,255,0.2);}
+
+/* ═══ FEED ═══ */
+#feed{height:100vh;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none;}
+#feed::-webkit-scrollbar{display:none;}
+
+/* Single short */
+.short{height:100vh;width:100%;scroll-snap-align:start;position:relative;background:#000;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.s-iframe{position:absolute;inset:0;width:100%;height:100%;border:none;}
+
+/* Gradient */
+.grad{position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(to top,rgba(0,0,0,0.92) 0%,rgba(0,0,0,0.08) 42%,rgba(0,0,0,0.32) 100%);}
+
+/* Loader */
+.s-ldr{position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;background:#000;}
+
+/* Tap zone */
+.tap{position:absolute;inset:0;z-index:6;cursor:pointer;}
+.pause-bub{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.13);backdrop-filter:blur(6px);border:2px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:30px;opacity:0;transition:opacity 0.22s;pointer-events:none;}
+.pause-bub.show{opacity:1;}
+
+/* Mute button — top right, discreet */
+.mute-btn{position:absolute;top:66px;right:14px;z-index:12;background:rgba(0,0,0,0.55);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.15);border-radius:99px;color:white;font-size:11px;font-weight:800;padding:5px 12px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+
+/* Following badge — subtle */
+.flw-badge{position:absolute;top:66px;left:14px;z-index:12;background:rgba(255,45,75,0.85);color:white;font-size:10px;font-weight:900;padding:4px 10px;border-radius:99px;display:none;pointer-events:none;}
+
+/* Right action buttons */
+.r-col{position:absolute;right:12px;bottom:110px;z-index:10;display:flex;flex-direction:column;gap:20px;align-items:center;}
+.r-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.r-ico{width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.1);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-size:22px;transition:transform 0.15s,background 0.15s;user-select:none;}
+.r-ico:active{transform:scale(0.85);}
+.r-ico.liked{background:rgba(255,45,75,0.3);border-color:var(--red);}
+.r-ico.saved{background:rgba(0,224,150,0.25);border-color:var(--green);}
+.r-lbl{font-size:10px;font-weight:800;color:rgba(255,255,255,0.7);text-align:center;}
+
+/* Channel avatar */
+.ch-wrap{cursor:pointer;position:relative;}
+.ch-av{width:46px;height:46px;border-radius:50%;border:2.5px solid rgba(255,255,255,0.88);object-fit:cover;background:var(--surface2);display:block;}
+.ch-plus{position:absolute;bottom:-3px;right:-3px;width:20px;height:20px;border-radius:50%;background:var(--red);border:2.5px solid #000;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:white;line-height:1;}
+.ch-plus.on{background:var(--green);}
+
+/* Bottom info */
+.b-info{position:absolute;bottom:72px;left:14px;right:74px;z-index:10;pointer-events:none;}
+.b-ch{font-size:14px;font-weight:800;color:#fff;display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+.flw-pill{pointer-events:all;cursor:pointer;font-size:10px;font-weight:900;padding:3px 10px;border-radius:99px;border:1.5px solid rgba(255,255,255,0.45);color:rgba(255,255,255,0.85);background:rgba(0,0,0,0.28);transition:all 0.18s;-webkit-tap-highlight-color:transparent;}
+.flw-pill.on{background:var(--red);border-color:var(--red);color:#fff;}
+.b-title{font-size:13px;color:rgba(255,255,255,0.78);line-height:1.55;margin-top:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.b-meta{font-size:11px;color:rgba(255,255,255,0.42);margin-top:6px;}
+
+/* Bottom nav */
+.bnav{position:fixed;bottom:0;left:0;right:0;z-index:20;display:flex;justify-content:space-around;align-items:center;padding:9px 0 18px;background:linear-gradient(to top,rgba(7,7,10,0.98),rgba(7,7,10,0.5));backdrop-filter:blur(14px);border-top:1px solid var(--border);}
+.bn{display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--muted);font-size:22px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.bn.on{color:var(--red);}
+.bn-lbl{font-size:9px;font-weight:800;letter-spacing:0.3px;}
+
+/* ═══ PANELS (bottom sheets) ═══ */
+.panel-bg{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.72);backdrop-filter:blur(8px);display:none;align-items:flex-end;justify-content:center;}
+.panel-sheet{width:100%;max-width:480px;background:var(--surface);border-radius:24px 24px 0 0;padding:26px 24px;border-top:1px solid var(--border);animation:slideUp 0.3s cubic-bezier(.32,.72,0,1);max-height:86vh;overflow-y:auto;}
+@keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.p-title{font-family:'Bebas Neue',sans-serif;font-size:23px;letter-spacing:1px;margin-bottom:18px;}
+.p-close{margin-top:16px;width:100%;padding:13px;border-radius:11px;border:none;background:var(--surface2);color:var(--muted);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;}
+
+/* Following panel */
+.fl-list{display:flex;flex-direction:column;}
+.fl-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
+.fl-row:last-child{border:none;}
+.fl-av{width:42px;height:42px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;border:2px solid var(--red);}
+.fl-name{flex:1;font-size:14px;font-weight:700;}
+.unflw-btn{padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--muted);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:color 0.15s;}
+.unflw-btn:hover{color:var(--red);}
+.fl-empty{color:var(--muted);font-size:14px;text-align:center;padding:28px 0;line-height:1.7;}
+
+/* Settings panel */
+.set-col{display:flex;flex-direction:column;gap:14px;}
+.set-row{display:flex;flex-direction:column;gap:7px;}
+.set-save{padding:14px;border-radius:11px;border:none;background:var(--red);color:white;font-family:inherit;font-size:15px;font-weight:800;cursor:pointer;}
+.set-ghost{width:100%;padding:12px;border-radius:11px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;}
+
+/* Toast */
+#toast{position:fixed;bottom:92px;left:50%;transform:translateX(-50%);padding:9px 18px;border-radius:99px;font-size:12px;font-weight:700;display:none;z-index:999;white-space:nowrap;pointer-events:none;}
+.t-ok{background:rgba(0,224,150,0.13);border:1px solid rgba(0,224,150,0.35);color:var(--green);}
+.t-err{background:rgba(255,45,75,0.13);border:1px solid rgba(255,45,75,0.35);color:var(--red);}
+.t-info{background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.25);color:var(--cyan);}
+</style>
+</head>
+<body>
+
+<!-- ═══ SETUP ═══ -->
+<div id="setup">
+  <div class="s-fire">🔥</div>
+  <div class="s-logo">ShortsFire</div>
+  <div class="s-tagline">Sirf <b>API key</b> dalo — baaki app khud sambhal lega.</div>
+  <div class="s-card">
+    <div>
+      <span class="s-label">API Key</span>
+      <div class="inp-wrap">
+        <input class="s-inp" id="api-inp" type="password" placeholder="AIzaSy..." autocomplete="off" spellcheck="false">
+        <button class="eye" onclick="toggleEye('api-inp')">👁</button>
+      </div>
+    </div>
+    <button class="go-btn" onclick="startApp()">🚀 Shuru Karo</button>
+  </div>
+  <div class="s-note">
+    Free key banao →
+    <a href="https://console.cloud.google.com" target="_blank">Google Console</a>
+    → YouTube Data API v3 enable → Credentials → Create API Key.<br>
+    Key sirf tumhare browser mein saved hoti hai.
+  </div>
+</div>
+
+<!-- ═══ LOADING ═══ -->
+<div id="loading">
+  <div class="l-logo">ShortsFire</div>
+  <div class="spin"></div>
+  <div class="l-msg" id="l-msg">Shorts aa rahe hain...</div>
+</div>
+
+<!-- ═══ MAIN APP ═══ -->
+<div id="app">
+  <!-- Top bar — clean, no algorithm text -->
+  <div class="topbar">
+    <div class="t-logo">🔥 ShortsFire</div>
+    <div class="t-btns">
+      <div class="t-btn" onclick="openPanel('following-panel')">👥</div>
+      <div class="t-btn" onclick="refreshFeed()">🔄</div>
+      <div class="t-btn" onclick="openPanel('settings-panel')">⚙️</div>
+    </div>
+  </div>
+
+  <div id="feed"></div>
+
+  <div class="bnav">
+    <div class="bn on">🏠<span class="bn-lbl">Home</span></div>
+    <div class="bn" onclick="openPanel('following-panel')">👥<span class="bn-lbl">Following</span></div>
+    <div class="bn" onclick="openPanel('settings-panel')">⚙️<span class="bn-lbl">Settings</span></div>
+  </div>
+</div>
+
+<!-- ═══ FOLLOWING PANEL ═══ -->
+<div class="panel-bg" id="following-panel" onclick="if(event.target===this)closePanel('following-panel')">
+  <div class="panel-sheet">
+    <div class="p-title">👥 Following</div>
+    <div class="fl-list" id="fl-list"></div>
+    <button class="p-close" onclick="closePanel('following-panel')">Baand Karo</button>
+  </div>
+</div>
+
+<!-- ═══ SETTINGS PANEL ═══ -->
+<div class="panel-bg" id="settings-panel" onclick="if(event.target===this)closePanel('settings-panel')">
+  <div class="panel-sheet">
+    <div class="p-title">⚙️ Settings</div>
+    <div class="set-col">
+      <div class="set-row">
+        <span class="s-label">API Key Badlo</span>
+        <div class="inp-wrap">
+          <input class="s-inp" id="set-api" type="password" placeholder="Naya API key...">
+          <button class="eye" onclick="toggleEye('set-api')">👁</button>
+        </div>
+      </div>
+      <div id="quota-status" style="background:var(--surface2);border-radius:11px;padding:12px;font-size:12px;color:var(--muted);line-height:1.8;display:none;"></div>
+      <button class="set-ghost" onclick="doReset()">🔄 Feed aur taste reset karo</button>
+      <button class="set-save" onclick="saveSettings()">💾 Save</button>
+      <button class="p-close" onclick="closePanel('settings-panel')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+'use strict';
+
+// ═══════════════════════════════════════════
+//  CATEGORIES — 18 categories, all auto
+// ═══════════════════════════════════════════
+const CATS = {
+  trending:   { q:'trending #Shorts viral 2024',         emoji:'🔥' },
+  comedy:     { q:'funny comedy #Shorts',                emoji:'😂' },
+  music:      { q:'music #Shorts trending songs',        emoji:'🎵' },
+  gaming:     { q:'gaming #Shorts funny highlights',     emoji:'🎮' },
+  cooking:    { q:'cooking recipe #Shorts easy',         emoji:'🍳' },
+  dance:      { q:'dance #Shorts viral trending',        emoji:'💃' },
+  tech:       { q:'tech tips tricks #Shorts gadgets',    emoji:'💻' },
+  travel:     { q:'travel #Shorts beautiful places',     emoji:'✈️' },
+  fitness:    { q:'fitness workout #Shorts',             emoji:'💪' },
+  facts:      { q:'amazing facts #Shorts mindblowing',   emoji:'🤯' },
+  motivation: { q:'motivation #Shorts success',          emoji:'⚡' },
+  animals:    { q:'cute funny animals #Shorts pets',     emoji:'🐾' },
+  diy:        { q:'diy life hacks #Shorts useful',       emoji:'🛠️' },
+  art:        { q:'art drawing creative #Shorts',        emoji:'🎨' },
+  sports:     { q:'sports #Shorts highlights amazing',   emoji:'⚽' },
+  fashion:    { q:'fashion style #Shorts outfit',        emoji:'👗' },
+  science:    { q:'science experiment #Shorts wow',      emoji:'🔬' },
+  news:       { q:'news #Shorts today current affairs',  emoji:'📰' },
+};
+
+// ═══════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════
+let API_KEY = '';
+let quotaHit = false;
+let pageTokens = {};
+let algo = {};              // cat → { score, secs, likes, skips, rewatches, shown }
+let pool = {};              // cat → [video]
+let queue = [];
+let seenIds = new Set();
+let likedIds = new Set();
+let savedIds = new Set();
+let followed = {};          // chId → { name, videos[] }
+let watchStart = null;
+let watchId = null;
+let watchCat = null;
+let mutedState = true;      // start muted (browser autoplay policy)
+let pausedSet = new Set();
+let fetching = false;
+let totalWatched = 0;
+
+// ═══════════════════════════════════════════
+//  ALGORITHM — runs silently, never shown on UI
+// ═══════════════════════════════════════════
+function initCat(c) {
+  if (!algo[c]) algo[c] = { score:50, secs:0, likes:0, skips:0, rewatches:0, shown:0 };
+}
+
+function sig(cat, field, val=1) {
+  if (!cat || !CATS[cat]) return;
+  initCat(cat);
+  algo[cat][field] = (algo[cat][field]||0) + val;
+  scoreCalc(cat);
+  savePersist();
+}
+
+function scoreCalc(cat) {
+  const a = algo[cat];
+  const n = Math.max(a.shown, 1);
+  // Normalised signals
+  const wt = Math.min(a.secs / (n * 22), 1);   // 22s = full watch
+  const lk = Math.min(a.likes / n, 1);
+  const rw = Math.min(a.rewatches / n, 1);
+  const sk = Math.min(a.skips / n, 1);
+  a.score = Math.max(0, Math.min(100,
+    50 + wt*40 + lk*30 + rw*15 - sk*35
+  ));
+}
+
+function topN(n) {
+  return Object.keys(algo)
+    .filter(c => CATS[c])
+    .sort((a,b) => algo[b].score - algo[a].score)
+    .slice(0, n);
+}
+
+// ═══════════════════════════════════════════
+//  SETUP
+// ═══════════════════════════════════════════
+function toggleEye(id) {
+  const inp = document.getElementById(id);
+  if (inp) inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+async function startApp() {
+  const key = document.getElementById('api-inp').value.trim();
+  if (!key.startsWith('AIza')) { toast('Valid API key daalo! (AIzaSy...)', 'err'); return; }
+  API_KEY = key;
+  quotaHit = false;
+  pageTokens = {};
+  localStorage.setItem('sf_key', key);
+  // Init all cats
+  Object.keys(CATS).forEach(initCat);
+  loadPersist();
+  show('loading'); hide('setup');
+  const ok = await fetchAll();
+  if (!ok) { hide('loading'); show('setup'); return; }
+  buildQueue();
+  renderFeed();
+}
+
+// ═══════════════════════════════════════════
+//  FETCH
+// ═══════════════════════════════════════════
+const LOAD_MSGS = [
+  'Shorts dhoondh rahe hain... 🔍',
+  'Algorithm chal raha hai... ⚡',
+  'Tumhare liye best content... 🎯',
+  'Almost ready... 🔥'
+];
+let msgI = 0, msgTimer;
+
+async function fetchAll() {
+  msgTimer = setInterval(() => {
+    const el = document.getElementById('l-msg');
+    if (el) el.textContent = LOAD_MSGS[msgI++ % LOAD_MSGS.length];
+  }, 1000);
+
+  pool = {};
+  pageTokens = {};
+  await Promise.allSettled(Object.keys(CATS).map(c => fetchCat(c, 8)));
+  clearInterval(msgTimer);
+
+  const total = Object.values(pool).reduce((s,v) => s + v.length, 0);
+  if (!total) {
+    const msg = quotaHit
+      ? 'API quota khatam ho gayi! Kal midnight pe reset hogi (US time).'
+      : 'Videos nahi mile. API key sahi hai? YouTube Data API v3 enable hai?';
+    toast(msg, 'err');
+    return false;
+  }
+  return true;
+}
+
+// Fetch one page for a category. Saves nextPageToken for future refills.
+async function fetchCat(cat, n=8) {
+  if (quotaHit) return;
+  const q = CATS[cat].q;
+  let url = `https://www.googleapis.com/youtube/v3/search`
+    + `?part=snippet&type=video&videoDuration=short`
+    + `&maxResults=${n}&q=${encodeURIComponent(q)}`
+    + `&key=${API_KEY}&order=relevance`;
+  // If we have a saved pageToken for this cat, use it → fresh page of results
+  if (pageTokens[cat]) url += `&pageToken=${pageTokens[cat]}`;
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok && res.status !== 400) return;
+    const d = await res.json();
+    if (d.error) {
+      if (d.error.code === 403) {
+        quotaHit = true;
+        showQuotaWarning();
+      }
+      return;
+    }
+    // Save nextPageToken so next refill fetches a DIFFERENT page
+    pageTokens[cat] = d.nextPageToken || null;
+
+    const items = (d.items || []).filter(it => it.id?.videoId);
+    if (!items.length) return;
+
+    // Verify <=60s (true Shorts only)
+    const ids = items.map(it => it.id.videoId).join(',');
+    let shortIds = new Set();
+    try {
+      const dr = await fetch(
+        `https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=${ids}&key=${API_KEY}`
+      );
+      const dd = await dr.json();
+      if (dd.error && dd.error.code === 403) { quotaHit = true; showQuotaWarning(); return; }
+      (dd.items || []).forEach(vi => {
+        if (parseDuration(vi.contentDetails?.duration) <= 60) shortIds.add(vi.id);
+      });
+    } catch(_) {
+      items.forEach(it => shortIds.add(it.id.videoId)); // fallback: accept all
+    }
+
+    const vids = items
+      .filter(it => shortIds.has(it.id.videoId))
+      .map(it => ({
+        id:    it.id.videoId,
+        title: it.snippet.title,
+        ch:    it.snippet.channelTitle,
+        chId:  it.snippet.channelId || it.snippet.channelTitle,
+        thumb: it.snippet.thumbnails?.high?.url || '',
+        cat,
+      }));
+    if (!pool[cat]) pool[cat] = [];
+    pool[cat].push(...vids);
+  } catch(_) {}
+}
+
+function showQuotaWarning() {
+  toast('⚠️ Quota khatam! Kal dobara aao ya naya key daalo.', 'err');
+  const box = document.getElementById('quota-status');
+  if (box) {
+    box.style.display = 'block';
+    box.innerHTML = `⚠️ <b style="color:var(--red)">Quota khatam ho gayi</b><br>
+      Ye key kal midnight (US time) pe reset hogi.<br>
+      Settings mein naya key dal sakte ho.`;
+  }
+}
+
+// Parse ISO 8601 duration string → total seconds
+function parseDuration(iso) {
+  if (!iso) return 0;
+  const m = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+  if (!m) return 0;
+  return (parseInt(m[1]||0)*3600) + (parseInt(m[2]||0)*60) + parseInt(m[3]||0);
+}
+
+async function fetchCreator(chName) {
+  if (quotaHit) return [];
+  const url = `https://www.googleapis.com/youtube/v3/search`
+    + `?part=snippet&type=video&videoDuration=short`
+    + `&maxResults=8&q=${encodeURIComponent(chName + ' #Shorts')}`
+    + `&key=${API_KEY}&order=date`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return [];
+    const d = await res.json();
+    if (d.error) { if (d.error.code === 403) { quotaHit = true; showQuotaWarning(); } return []; }
+    const items = (d.items || []).filter(it => it.id?.videoId);
+    if (!items.length) return [];
+    const ids = items.map(it => it.id.videoId).join(',');
+    let shortIds = new Set();
+    try {
+      const dr = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=${ids}&key=${API_KEY}`);
+      const dd = await dr.json();
+      (dd.items || []).forEach(vi => {
+        if (parseDuration(vi.contentDetails?.duration) <= 60) shortIds.add(vi.id);
+      });
+    } catch(_) { items.forEach(it => shortIds.add(it.id.videoId)); }
+    return items.filter(it => shortIds.has(it.id.videoId)).map(it => ({
+      id: it.id.videoId, title: it.snippet.title,
+      ch: it.snippet.channelTitle,
+      chId: it.snippet.channelId || it.snippet.channelTitle,
+      thumb: it.snippet.thumbnails?.high?.url || '',
+      cat: 'followed', isFollowed: true,
+    }));
+  } catch(_) { return []; }
+}
+
+// ═══════════════════════════════════════════
+//  QUEUE — algo-weighted + followed priority
+// ═══════════════════════════════════════════
+function buildQueue() {
+  // Followed creator videos (priority)
+  const fVids = [];
+  Object.values(followed).forEach(cr => {
+    (cr.videos || [])
+      .filter(v => !seenIds.has(v.id))
+      .forEach(v => fVids.push({ ...v, isFollowed: true }));
+  });
+  shuffle(fVids);
+
+  // Algo-weighted pool
+  const weighted = [];
+  Object.keys(CATS).forEach(cat => {
+    const vids = (pool[cat] || []).filter(v => !seenIds.has(v.id));
+    if (!vids.length) return;
+    // slots = 1–5 based on score
+    const slots = Math.max(1, Math.round((algo[cat]?.score || 50) / 20));
+    for (let i = 0; i < slots; i++) weighted.push({ ...vids[i % vids.length] });
+  });
+  shuffle(weighted);
+
+  // Merge: followed video injected every 4 slots
+  const merged = [];
+  let fi = 0;
+  weighted.forEach((v, i) => {
+    if (fi < fVids.length && i % 4 === 0) merged.push(fVids[fi++]);
+    merged.push(v);
+  });
+  while (fi < fVids.length) merged.push(fVids[fi++]);
+
+  // Dedupe by id
+  const seen = new Set();
+  queue = merged.filter(v => {
+    if (seen.has(v.id)) return false;
+    seen.add(v.id);
+    return true;
+  });
+}
+
+// ═══════════════════════════════════════════
+//  RENDER FEED
+// ═══════════════════════════════════════════
+function renderFeed() {
+  hide('loading');
+  show('app');
+  const feed = document.getElementById('feed');
+  feed.innerHTML = '';
+  if (!queue.length) {
+    feed.innerHTML = `<div style="height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--muted)"><div style="font-size:52px">😕</div><div style="font-size:15px">Koi shorts nahi mile</div></div>`;
+    return;
+  }
+  queue.forEach((v, i) => feed.appendChild(makeCard(v, i)));
+  attachObs(feed.querySelectorAll('.short'));
+}
+
+function makeCard(v, idx) {
+  const isF = !!followed[v.chId] || v.isFollowed;
+  const cat  = CATS[v.cat] || CATS.trending;
+  const el   = document.createElement('div');
+  el.className = 'short';
+  el.dataset.id  = v.id;
+  el.dataset.cat = v.cat || 'trending';
+  el.dataset.idx = String(idx);
+  el.dataset.chid = v.chId;
+  el.dataset.ch   = v.ch;
+
+  // Safe strings for inline onclick
+  const safeId   = v.id;
+  const safeChId = v.chId.replace(/'/g, '');
+  const safeCh   = v.ch.replace(/'/g, '');
+  const safeTitle = encodeURIComponent(v.title);
+
+  el.innerHTML = `
+    <div class="grad"></div>
+    <div class="s-ldr" id="ldr-${safeId}"><div class="spin"></div></div>
+    <div class="tap" onclick="onTap('${safeId}')">
+      <div class="pause-bub" id="pbub-${safeId}">▶</div>
+    </div>
+
+    <button class="mute-btn" id="mute-${safeId}" onclick="onMute('${safeId}')">🔇 Unmute</button>
+    ${isF ? `<div class="flw-badge" style="display:block">👥 Following</div>` : ''}
+
+    <div class="r-col">
+      <div class="r-item ch-wrap" onclick="onFollow('${safeChId}','${safeCh}','${v.cat || 'trending'}','${safeId}')">
+        <img class="ch-av" src="${v.thumb}" onerror="this.src='';this.style.background='var(--surface2)'">
+        <div class="ch-plus ${isF?'on':''}" id="chplus-${safeId}">${isF?'✓':'+'}</div>
+      </div>
+      <div class="r-item" onclick="onLike('${safeId}','${v.cat || 'trending'}')">
+        <div class="r-ico ${likedIds.has(v.id)?'liked':''}" id="like-${safeId}">❤️</div>
+        <div class="r-lbl" id="likelbl-${safeId}">Like</div>
+      </div>
+      <div class="r-item" onclick="onSave('${safeId}')">
+        <div class="r-ico ${savedIds.has(v.id)?'saved':''}" id="save-${safeId}">${savedIds.has(v.id)?'✅':'🔖'}</div>
+        <div class="r-lbl">${savedIds.has(v.id)?'Saved':'Save'}</div>
+      </div>
+      <div class="r-item" onclick="onShare('${safeId}','${safeTitle}')">
+        <div class="r-ico">↗️</div>
+        <div class="r-lbl">Share</div>
+      </div>
+    </div>
+
+    <div class="b-info">
+      <div class="b-ch">
+        <span>@${esc(v.ch)}</span>
+        <span class="flw-pill ${isF?'on':''}" id="pill-${safeId}"
+          onclick="onFollow('${safeChId}','${safeCh}','${v.cat||'trending'}','${safeId}')">
+          ${isF ? '✓ Following' : '+ Follow'}
+        </span>
+      </div>
+      <div class="b-title">${esc(v.title)}</div>
+      <div class="b-meta">${cat.emoji} ${v.cat || 'trending'}</div>
+    </div>
+  `;
+  return el;
+}
+
+function esc(s) {
+  return String(s||'').replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])
+  );
+}
+
+// ═══════════════════════════════════════════
+//  INTERSECTION OBSERVER
+// ═══════════════════════════════════════════
+let observer;
+function attachObs(els) {
+  if (observer) observer.disconnect();
+  observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) onEnter(e.target);
+      else onLeave(e.target);
+    });
+  }, { threshold: 0.75 });
+  els.forEach(el => observer.observe(el));
+}
+
+function onEnter(el) {
+  const id  = el.dataset.id;
+  const cat = el.dataset.cat;
+
+  watchId = id; watchCat = cat; watchStart = Date.now();
+  initCat(cat);
+  algo[cat].shown = (algo[cat].shown || 0) + 1;
+  seenIds.add(id);
+  totalWatched++;
+  mutedState = true; // reset mute for each new video
+
+  // Update mute button text
+  const mb = document.getElementById('mute-' + id);
+  if (mb) mb.textContent = '🔇 Unmute';
+
+  // Load iframe only when visible
+  if (!el.querySelector('iframe')) {
+    const ifr = document.createElement('iframe');
+    ifr.className = 's-iframe';
+    // mute=1 required for autoplay — user can unmute
+    ifr.src = `https://www.youtube.com/embed/${id}`
+      + `?autoplay=1&mute=1&controls=0&loop=1&playlist=${id}`
+      + `&rel=0&playsinline=1&enablejsapi=1&modestbranding=1&iv_load_policy=3&origin=https://www.youtube.com`;
+    ifr.allow = 'autoplay; fullscreen; picture-in-picture; encrypted-media';
+    ifr.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
+    ifr.allowFullscreen = true;
+    ifr.onload = () => hideLdr(id);
+    el.insertBefore(ifr, el.firstChild);
+    // fallback: hide loader after 5s even if onload doesn't fire
+    setTimeout(() => hideLdr(id), 5000);
+  }
+
+  // Refill when near end
+  const idx = parseInt(el.dataset.idx);
+  if (queue.length - idx <= 5) refill();
+}
+
+function onLeave(el) {
+  const id  = el.dataset.id;
+  const cat = el.dataset.cat;
+
+  // Record watch time signal
+  if (watchStart && watchId === id) {
+    const secs = (Date.now() - watchStart) / 1000;
+    sig(cat, 'secs', secs);
+    if (secs < 2.5) sig(cat, 'skips'); // scrolled away fast
+    watchStart = null;
+  }
+
+  // Destroy iframe to free memory
+  const ifr = el.querySelector('iframe');
+  if (ifr) { ifr.src = ''; ifr.remove(); showLdr(id); }
+  pausedSet.delete(id);
+}
+
+function hideLdr(id) { const e = document.getElementById('ldr-'+id); if (e) e.style.display = 'none'; }
+function showLdr(id) { const e = document.getElementById('ldr-'+id); if (e) e.style.display = 'flex'; }
+
+// ═══════════════════════════════════════════
+//  REFILL — nextPageToken se nayi shorts, same key
+// ═══════════════════════════════════════════
+async function refill() {
+  if (fetching || quotaHit) return;
+  fetching = true;
+  // fetchCat internally uses pageTokens[cat] → gets next page of results
+  await Promise.allSettled(topN(4).map(c => fetchCat(c, 8)));
+  buildQueue();
+  const feed = document.getElementById('feed');
+  const existIds = new Set([...feed.querySelectorAll('.short')].map(e => e.dataset.id));
+  const newVids = queue.filter(v => !existIds.has(v.id)).slice(0, 10);
+  if (newVids.length) {
+    const offset = feed.querySelectorAll('.short').length;
+    newVids.forEach((v, i) => feed.appendChild(makeCard(v, offset + i)));
+    attachObs(feed.querySelectorAll('.short'));
+  }
+  fetching = false;
+}
+
+// ═══════════════════════════════════════════
+//  USER ACTIONS
+// ═══════════════════════════════════════════
+function onTap(id) {
+  const ifr = document.querySelector(`[data-id="${id}"] iframe`);
+  const bub = document.getElementById('pbub-' + id);
+  if (!ifr) return;
+  if (pausedSet.has(id)) {
+    pausedSet.delete(id);
+    postMsg(ifr, 'playVideo');
+    if (bub) bub.classList.remove('show');
+    if (watchCat) sig(watchCat, 'rewatches'); // pause-resume = interest
+  } else {
+    pausedSet.add(id);
+    postMsg(ifr, 'pauseVideo');
+    if (bub) { bub.textContent = '▶'; bub.classList.add('show'); setTimeout(() => bub.classList.remove('show'), 1500); }
+  }
+}
+
+function onMute(id) {
+  const ifr = document.querySelector(`[data-id="${id}"] iframe`);
+  const btn = document.getElementById('mute-' + id);
+  if (!ifr) return;
+  if (mutedState) {
+    postMsg(ifr, 'unMute');
+    mutedState = false;
+    if (btn) btn.textContent = '🔊 Mute';
+  } else {
+    postMsg(ifr, 'mute');
+    mutedState = true;
+    if (btn) btn.textContent = '🔇 Unmute';
+  }
+}
+
+function postMsg(ifr, func) {
+  try { ifr.contentWindow.postMessage(JSON.stringify({ event:'command', func, args:'' }), '*'); } catch(_) {}
+}
+
+function onLike(id, cat) {
+  const ico = document.getElementById('like-' + id);
+  if (!ico) return;
+  if (likedIds.has(id)) {
+    likedIds.delete(id);
+    ico.classList.remove('liked');
+  } else {
+    likedIds.add(id);
+    ico.classList.add('liked');
+    ico.style.transform = 'scale(1.5)';
+    setTimeout(() => ico.style.transform = '', 220);
+    sig(cat, 'likes'); // algorithm learns silently
+  }
+}
+
+function onSave(id) {
+  const ico = document.getElementById('save-' + id);
+  if (!ico) return;
+  if (savedIds.has(id)) {
+    savedIds.delete(id);
+    ico.classList.remove('saved');
+    ico.textContent = '🔖';
+  } else {
+    savedIds.add(id);
+    ico.classList.add('saved');
+    ico.textContent = '✅';
+    toast('🔖 Saved!', 'ok');
+  }
+}
+
+function onShare(id, title) {
+  const url = `https://www.youtube-nocookie.com/watch?v=${id}`;
+  if (navigator.share) {
+    navigator.share({ title: decodeURIComponent(title), url }).catch(() => {});
+  } else {
+    navigator.clipboard?.writeText(url)
+      .then(() => toast('📋 Link copy ho gaya!', 'info'))
+      .catch(() => toast('Link: ' + url, 'info'));
+  }
+}
+
+// ═══════════════════════════════════════════
+//  FOLLOW SYSTEM
+// ═══════════════════════════════════════════
+async function onFollow(chId, chName, cat, vidId) {
+  if (followed[chId]) {
+    // Unfollow
+    delete followed[chId];
+    savePersist();
+    updateFollowUI(chId, vidId, false);
+    toast(`${chName} ko unfollow kiya`, 'info');
+  } else {
+    // Follow
+    followed[chId] = { name: chName, cat, videos: [] };
+    savePersist();
+    updateFollowUI(chId, vidId, true);
+    toast(`👥 ${chName} ko follow kiya! Unki reels upar aayengi.`, 'ok');
+    // Background fetch their latest
+    fetchCreator(chName).then(vids => {
+      if (!followed[chId]) return;
+      followed[chId].videos = vids;
+      savePersist();
+      injectFollowedTop(vids);
+    });
+  }
+}
+
+function updateFollowUI(chId, vidId, on) {
+  // Update all cards of this creator visible in feed
+  document.querySelectorAll(`.short[data-chid="${CSS.escape(chId)}"]`).forEach(card => {
+    const badge = card.querySelector('.flw-badge');
+    if (badge) badge.style.display = on ? 'block' : 'none';
+  });
+  // Update the specific card's pill and plus dot
+  const pill   = document.getElementById('pill-'   + vidId);
+  const chplus = document.getElementById('chplus-' + vidId);
+  if (pill)   { pill.textContent = on ? '✓ Following' : '+ Follow'; pill.classList.toggle('on', on); }
+  if (chplus) { chplus.textContent = on ? '✓' : '+'; chplus.classList.toggle('on', on); }
+}
+
+function injectFollowedTop(vids) {
+  if (!vids.length) return;
+  const feed = document.getElementById('feed');
+  const ref  = feed.querySelector('.short:nth-child(2)') || feed.firstChild;
+  if (!ref) return;
+  const fresh = vids.filter(v => !seenIds.has(v.id)).slice(0, 3);
+  fresh.reverse().forEach((v, i) => {
+    const el = makeCard({ ...v, isFollowed: true }, -(i+1));
+    feed.insertBefore(el, ref);
+  });
+  attachObs(feed.querySelectorAll('.short'));
+}
+
+// ═══════════════════════════════════════════
+//  PANELS
+// ═══════════════════════════════════════════
+function openPanel(id) {
+  if (id === 'following-panel') renderFollowing();
+  if (id === 'settings-panel') {
+    document.getElementById('set-api').value = '';
+    const box = document.getElementById('quota-status');
+    if (box) box.style.display = quotaHit ? 'block' : 'none';
+  }
+  document.getElementById(id).style.display = 'flex';
+}
+function closePanel(id) { document.getElementById(id).style.display = 'none'; }
+
+function renderFollowing() {
+  const list = document.getElementById('fl-list');
+  const keys = Object.keys(followed);
+  if (!keys.length) {
+    list.innerHTML = `<div class="fl-empty">Abhi kisi ko follow nahi kiya.<br>Kisi short ke neeche <b>+ Follow</b> dabaao!</div>`;
+    return;
+  }
+  list.innerHTML = keys.map(k => `
+    <div class="fl-row">
+      <div class="fl-av">👤</div>
+      <div class="fl-name">${esc(followed[k].name)}</div>
+      <button class="unflw-btn" onclick="unfollow('${k}')">Unfollow</button>
+    </div>
+  `).join('');
+}
+
+function unfollow(chId) {
+  if (!followed[chId]) return;
+  const name = followed[chId].name;
+  delete followed[chId];
+  savePersist();
+  renderFollowing();
+  toast(`${name} ko unfollow kiya`, 'info');
+}
+
+function saveSettings() {
+  const k = document.getElementById('set-api').value.trim();
+  if (k && k.startsWith('AIza')) {
+    API_KEY = k;
+    quotaHit = false;
+    pageTokens = {};
+    localStorage.setItem('sf_key', k);
+    toast('✅ Key save ho gayi! Feed reload karo.', 'ok');
+  } else if (k) {
+    toast('Valid key nahi hai (AIzaSy... se shuru honi chahiye)', 'err');
+    return;
+  }
+  closePanel('settings-panel');
+}
+
+function doReset() {
+  if (!confirm('Taste aur feed reset ho jayegi. Sure ho?')) return;
+  Object.keys(algo).forEach(c => {
+    algo[c] = { score:50, secs:0, likes:0, skips:0, rewatches:0, shown:0 };
+  });
+  likedIds.clear(); savedIds.clear(); seenIds.clear();
+  totalWatched = 0; pageTokens = {};
+  savePersist();
+  closePanel('settings-panel');
+  toast('🔄 Reset ho gaya!', 'info');
+}
+
+async function refreshFeed() {
+  toast('🔄 Naye shorts aa rahe hain...', 'info');
+  seenIds.clear(); pool = {}; queue = [];
+  quotaHit = false; pageTokens = {};
+  document.getElementById('feed').innerHTML = '';
+  show('loading'); hide('app');
+  const ok = await fetchAll();
+  if (!ok) { hide('loading'); show('app'); return; }
+  await Promise.allSettled(
+    Object.entries(followed).map(async ([k, cr]) => {
+      const vids = await fetchCreator(cr.name);
+      if (followed[k]) followed[k].videos = vids;
+    })
+  );
+  buildQueue();
+  renderFeed();
+}
+
+// ═══════════════════════════════════════════
+//  PERSIST
+// ═══════════════════════════════════════════
+function savePersist() {
+  try {
+    localStorage.setItem('sf_algo', JSON.stringify(algo));
+    localStorage.setItem('sf_flw',  JSON.stringify(followed));
+  } catch(_) {}
+}
+
+function loadPersist() {
+  try {
+    const a = localStorage.getItem('sf_algo');
+    if (a) {
+      const p = JSON.parse(a);
+
+      Object.keys(p).forEach(c => { if (CATS[c]) algo[c] = p[c]; });
+    }
+    const f = localStorage.getItem('sf_flw');
+    if (f) followed = JSON.parse(f) || {};
+  } catch(_) {}
+}
+
+// ═══════════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════════
+function show(id) { document.getElementById(id).style.display = id === 'app' ? 'block' : 'flex'; }
+function hide(id) { document.getElementById(id).style.display = 'none'; }
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i+1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function toast(msg, type='info') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 't-' + type;
+  t.style.display = 'block';
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.style.display = 'none', 2800);
+}
+
+// Restore API key on load + detect file:// protocol
+window.addEventListener('load', () => {
+  // file:// protocol = YouTube embeds blocked by browser
+  if (location.protocol === 'file:') {
+    document.body.innerHTML = `
+      <div style="position:fixed;inset:0;background:#07070a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:28px;font-family:sans-serif;color:#f0f0f5;text-align:center;">
+        <div style="font-size:52px">⚠️</div>
+        <div style="font-size:28px;font-weight:900;background:linear-gradient(135deg,#ff2d4b,#ffd60a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">File Se Nahi Chalega</div>
+        <div style="color:#6e6e8a;font-size:14px;max-width:300px;line-height:1.85;">
+          YouTube videos <b style="color:#f0f0f5">file://</b> protocol pe embed nahi hote — browser block karta hai.<br><br>
+          App ko <b style="color:#f0f0f5">live server</b> se open karo:
+        </div>
+        <div style="background:#111116;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:22px;max-width:360px;width:100%;text-align:left;">
+          <div style="font-size:11px;font-weight:800;color:#6e6e8a;letter-spacing:1px;margin-bottom:10px;">OPTION 1 — VS Code (Easiest)</div>
+          <div style="font-size:13px;color:#00e5ff;line-height:2.1;">
+            1. VS Code install karo<br>
+            2. <b>Live Server</b> extension install karo<br>
+            3. File kholo → neeche <b>Go Live</b> dabaao<br>
+            4. <b>localhost:5500</b> pe app chalega ✅
+          </div>
+          <div style="margin-top:16px;font-size:11px;font-weight:800;color:#6e6e8a;letter-spacing:1px;margin-bottom:10px;">OPTION 2 — Terminal</div>
+          <div style="background:#0d0d12;border-radius:10px;padding:12px;font-size:12px;font-family:monospace;line-height:2;">
+            <span style="color:#00e096">npx serve .</span> <span style="color:#6e6e8a">(Node.js)</span><br>
+            <span style="color:#00e096">python -m http.server</span> <span style="color:#6e6e8a">(Python)</span>
+          </div>
+        </div>
+      </div>`;
+    return;
+  }
+  const k = localStorage.getItem('sf_key');
+  if (k) document.getElementById('api-inp').value = k;
+});
+</script>
+</body>
+</html>
